@@ -1,0 +1,40 @@
+#Assign: Project1
+#Author: Eli Harris
+#eName: ehharris
+#Email: ehharris@rams.colostate.edu
+
+from subprocess import Popen, PIPE, STDOUT
+import sys
+
+
+if len(sys.argv) != 3:
+    print ("Incorrect usage, ussage: $python3 asymmetricky-decr privateKey <wrappedkeys>.cipher")
+    sys.exit()
+    
+privateKeysFile = open(sys.argv[1], "r")
+keysFile = open(sys.argv[2], "r")
+privateKeys = privateKeysFile.read().split(",")
+keys = keysFile.read().splitlines()
+privateKeysFile.close()
+keysFile.close()
+
+print("Decrypting...")
+d = int(privateKeys[0])
+n = int(privateKeys[1])
+
+decodedKeys = ""
+for key in keys:
+    newKey = key.split()
+    for char in newKey:
+        p = Popen(['bc'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        encode_a_b  = "{} {} {} {} {}\n".format(char,'^',d,'%',n).encode('utf-8')
+        stdout_data = p.communicate(input=encode_a_b)[0]
+        pee = int(stdout_data.decode('utf-8')[:-1])
+        decodedKeys += chr(pee)
+        
+fname = sys.argv[2].split('.')
+fnameFinal = fname[0] + ".txt"
+output = open(fnameFinal, "w")
+output.write(decodedKeys)
+output.close
+print("Done")

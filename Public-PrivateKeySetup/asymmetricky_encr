@@ -1,0 +1,53 @@
+#Assign: Project1
+#Author: Eli Harris
+#eName: ehharris
+#Email: ehharris@rams.colostate.edu
+
+from subprocess import Popen, PIPE, STDOUT
+import sys
+
+
+if len(sys.argv) != 3:
+    print ("Incorrect usage, ussage: $python3 asymmetricky-encr publicKey <keys>.txt")
+    sys.exit()
+    
+publicKeysFile = open(sys.argv[1], "r")
+keysFile = open(sys.argv[2], "r")
+publicKeys = publicKeysFile.read().split(",")
+keys = keysFile.read().split()
+publicKeysFile.close()
+keysFile.close()
+
+print("Encrypting...")
+e = int(publicKeys[0])
+n = int(publicKeys[1])
+
+encodedKey = ""
+for x in keys[0]:
+    p = Popen(['bc'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    encode_a_b  = "{} {} {} {} {}\n".format(ord(x),'^',e,'%',n).encode('utf-8')
+    stdout_data = p.communicate(input=encode_a_b)[0]
+    encodedKey += (stdout_data.decode('utf-8')[:-1])
+    encodedKey += " "
+
+encodedKey += "\n"
+space = ord(' ')
+p = Popen(['bc'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+encode_a_b  = "{} {} {} {} {}\n".format(space,'^',e,'%',n).encode('utf-8')
+stdout_data = p.communicate(input=encode_a_b)[0]
+encodedKey += (stdout_data.decode('utf-8')[:-1])
+encodedKey += "\n"
+
+for x in keys[1]:
+    p = Popen(['bc'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    encode_a_b  = "{} {} {} {} {}\n".format(ord(x),'^',e,'%',n).encode('utf-8')
+    stdout_data = p.communicate(input=encode_a_b)[0]
+    encodedKey += (stdout_data.decode('utf-8')[:-1])
+    encodedKey += " "
+
+fname = sys.argv[2].split('.')
+fnameFinal = fname[0] + ".cipher"
+output = open(fnameFinal, "w")
+output.write(encodedKey)
+output.close
+print("Done")

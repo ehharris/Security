@@ -1,0 +1,89 @@
+#Assign: Project1
+#Author: Eli Harris
+#eName: ehharris
+#Email: ehharris@rams.colostate.edu
+
+import sys
+from collections import OrderedDict
+
+if len(sys.argv) != 3:
+    print ("Incorrect usage, ussage: $python3 transposition-encr <text-to-encrypt>.txt <keys>.txt")
+    sys.exit()
+
+def split(seq, length):
+    return [seq[i:i+length] for i in range(0, len(seq), length)]
+
+def encode(key, textToEncode):
+    segText = split(textToEncode, 10)
+    sortedKey = ''.join(sorted(key))
+    count = 0
+    count2 = 0
+    order = [0,0,0,0,0,0,0,0,0,0]
+    for x in sortedKey:
+        for j in key:
+            if (j == x):
+                order[count2] = count
+            count2 = count2 + 1
+        count2 = 0
+        count = count + 1
+    encodedText = ""
+    count2 = 0
+    for i in range(0,10):
+        for x in order:
+            if (i == x):
+                count = count2
+            count2 = count2 + 1
+        count2 = 0
+        for seg in segText:
+            if(len(seg) > count):
+                encodedText += seg[count]
+    return encodedText
+
+#Gets text from files
+unencryptedTextFile = open(sys.argv[1], "r")
+keysFile = open(sys.argv[2], "r")
+unencryptedText = unencryptedTextFile.read()
+#Array containing each key
+keys = keysFile.read().split()
+unencryptedTextFile.close()
+keysFile.close()
+
+#Encrypts Text
+print("Encrypting...")
+newKeys = []
+#Checks for key length
+for x in keys:
+    newKey = "".join(OrderedDict.fromkeys(x))
+    if (len(newKey) < 10):
+        print("Key provided(after duplicates taken out) is under 10 chars, please provide new keys!")
+        sys.exit()
+    
+    newNewKey = split(newKey, 10)
+    newKeys.append(newNewKey[0].upper())
+if (len(newKeys) != 2):
+    print("Too little or too many keys provided, 2 keys are required!")
+    sys.exit()
+    
+#Converts text to uppercase, replaces ./?/! to XX, and removes spaces
+uppercaseText = "";
+for x in unencryptedText:
+    if (x == "." or x == "?" or x == "!"):
+        uppercaseText += "XX"
+    elif (x == " "):
+        unused = x
+    else:
+        uppercaseText += x.upper()
+uppercaseText += "X"
+
+encoded1 = encode(newKeys[0], uppercaseText)
+encoded2 = encode(newKeys[1], encoded1)
+
+fname = sys.argv[1].split('.')
+fnameFinal = fname[0] + ".cipher"
+output = open(fnameFinal, "w")
+output.write(encoded2)
+output.close
+print("Done")
+
+
+
